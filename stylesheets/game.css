@@ -1,0 +1,730 @@
+/* Imposter Game Styles */
+
+:root {
+    --color-red: #c51111;
+    --color-blue: #132ed1;
+    --color-green: #117f2d;
+    --color-yellow: #f6f657;
+    --color-purple: #6b2fbc;
+    --color-orange: #ef7d0d;
+    --color-pink: #ed54ba;
+    --color-cyan: #38fedc;
+    --bg-dark: #1a1a2e;
+    --bg-medium: #16213e;
+    --bg-light: #0f3460;
+    --text-light: #e94560;
+    --text-white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-medium) 100%);
+    color: var(--text-white);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#app {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.screen.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 5px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--bg-light);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    color: white;
+}
+
+.btn-task {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    width: 100%;
+    margin: 5px 0;
+}
+
+.btn-kill {
+    background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+    color: white;
+    width: 100%;
+    margin: 5px 0;
+}
+
+/* Lobby Screen */
+#lobby-screen h1 {
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 40px;
+    text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+}
+
+.lobby-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.player-setup,
+.players-list,
+.game-settings {
+    background: var(--bg-medium);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.player-setup h2,
+.players-list h2,
+.game-settings h2 {
+    margin-bottom: 20px;
+    color: var(--text-light);
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.input-group input,
+.input-group select {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--bg-light);
+    border-radius: 8px;
+    background: var(--bg-dark);
+    color: white;
+    font-size: 16px;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: var(--text-light);
+}
+
+#players-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.player-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg-light);
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.player-card:hover {
+    transform: translateX(5px);
+}
+
+.player-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 3px solid white;
+}
+
+.player-name {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.btn-remove {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-red);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-remove:hover {
+    transform: scale(1.2);
+}
+
+.game-settings {
+    grid-column: 1 / -1;
+}
+
+.setting {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.setting label {
+    flex: 1;
+    font-size: 16px;
+}
+
+.setting select {
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--bg-dark);
+    color: white;
+    border: 2px solid var(--bg-light);
+    font-size: 16px;
+}
+
+#start-game-btn {
+    grid-column: 1 / -1;
+    padding: 20px;
+    font-size: 20px;
+    margin-top: 20px;
+}
+
+/* Role Reveal Screen */
+.role-reveal {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.role-reveal h1 {
+    font-size: 48px;
+    margin-bottom: 40px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.role-icon {
+    font-size: 120px;
+    margin: 40px 0;
+}
+
+.role-icon.imposter {
+    animation: shake 0.5s infinite;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: rotate(-5deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+}
+
+#role-description {
+    font-size: 24px;
+    margin: 30px 0;
+}
+
+#role-teammates {
+    font-size: 18px;
+    margin: 20px 0;
+    color: var(--text-light);
+}
+
+/* Game Screen */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 40px);
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--bg-medium);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.role-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.role-badge.crewmate {
+    background: var(--color-blue);
+}
+
+.role-badge.imposter {
+    background: var(--color-red);
+}
+
+.game-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 18px;
+}
+
+.game-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.map-area {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 20px;
+    background: var(--bg-medium);
+    border-radius: 12px;
+    overflow-y: auto;
+}
+
+.room {
+    background: var(--bg-light);
+    padding: 20px;
+    border-radius: 12px;
+    min-height: 200px;
+    transition: all 0.3s;
+}
+
+.room:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(233, 69, 96, 0.3);
+}
+
+.room h3 {
+    margin-bottom: 15px;
+    color: var(--text-light);
+}
+
+.room-players {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.room-player-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid white;
+    font-size: 16px;
+}
+
+.room-tasks {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.task-indicator {
+    width: 30px;
+    height: 30px;
+    background: var(--color-yellow);
+    color: black;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.action-panel {
+    background: var(--bg-medium);
+    padding: 20px;
+    border-radius: 12px;
+    overflow-y: auto;
+}
+
+.action-panel h3 {
+    color: var(--text-light);
+    margin-bottom: 15px;
+}
+
+#current-location {
+    padding: 15px;
+    background: var(--bg-light);
+    border-radius: 8px;
+    margin: 15px 0;
+    font-size: 16px;
+}
+
+#available-actions,
+#task-actions,
+#imposter-actions {
+    margin: 15px 0;
+}
+
+.move-btn {
+    width: 100%;
+    margin: 5px 0;
+    text-align: left;
+}
+
+#next-player-btn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Voting Screen */
+.voting-content {
+    text-align: center;
+}
+
+.voting-content h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+#voting-reason {
+    font-size: 24px;
+    color: var(--text-light);
+    margin: 20px 0;
+}
+
+.voting-instructions {
+    font-size: 18px;
+    margin: 20px 0;
+}
+
+.voting-area {
+    background: var(--bg-medium);
+    padding: 30px;
+    border-radius: 12px;
+    margin: 30px 0;
+}
+
+#vote-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.vote-option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: var(--bg-light);
+    border: 3px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.vote-option:hover {
+    border-color: var(--text-light);
+    transform: scale(1.05);
+}
+
+.votes-display {
+    background: var(--bg-medium);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+}
+
+/* Game Over Screen */
+.gameover-content {
+    text-align: center;
+    padding: 40px;
+}
+
+.gameover-content h1 {
+    font-size: 64px;
+    margin-bottom: 30px;
+    animation: fadeInScale 1s ease-in;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#winner-icon {
+    font-size: 150px;
+    margin: 30px 0;
+}
+
+#winner-message {
+    font-size: 28px;
+    margin: 20px 0;
+    color: var(--text-light);
+}
+
+#final-players {
+    background: var(--bg-medium);
+    padding: 30px;
+    border-radius: 12px;
+    margin: 30px 0;
+}
+
+.final-player {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    background: var(--bg-light);
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+/* Task Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--bg-medium);
+    padding: 40px;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h2 {
+    color: var(--text-light);
+    margin-bottom: 20px;
+    font-size: 32px;
+}
+
+#task-interface {
+    min-height: 200px;
+    padding: 20px;
+    margin: 20px 0;
+    background: var(--bg-light);
+    border-radius: 12px;
+}
+
+.task-wires,
+.task-download,
+.task-scan {
+    text-align: center;
+}
+
+.wire-game {
+    margin: 20px 0;
+}
+
+.wire-pair {
+    font-size: 24px;
+    margin: 10px 0;
+    padding: 10px;
+    background: var(--bg-dark);
+    border-radius: 8px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 30px;
+    background: var(--bg-dark);
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+    animation: progress 2s ease-in-out;
+}
+
+@keyframes progress {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+.scan-animation {
+    font-size: 64px;
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .lobby-content {
+        grid-template-columns: 1fr;
+    }
+
+    .game-content {
+        grid-template-columns: 1fr;
+    }
+
+    .map-area {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .map-area {
+        grid-template-columns: 1fr;
+    }
+
+    #vote-options {
+        grid-template-columns: 1fr;
+    }
+
+    .gameover-content h1 {
+        font-size: 40px;
+    }
+
+    #winner-icon {
+        font-size: 100px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-light);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-light);
+}

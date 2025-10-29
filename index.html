@@ -1,74 +1,195 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imposter - Multiplayer Game</title>
+    <link rel="stylesheet" href="stylesheets/game.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen active">
+            <div class="container">
+                <h1>🎮 IMPOSTER GAME</h1>
+                <div class="lobby-content">
+                    <div class="player-setup">
+                        <h2>Spieler Setup</h2>
+                        <div class="input-group">
+                            <input type="text" id="player-name" placeholder="Dein Name" maxlength="12">
+                            <select id="player-color">
+                                <option value="red">Rot</option>
+                                <option value="blue">Blau</option>
+                                <option value="green">Grün</option>
+                                <option value="yellow">Gelb</option>
+                                <option value="purple">Lila</option>
+                                <option value="orange">Orange</option>
+                                <option value="pink">Pink</option>
+                                <option value="cyan">Cyan</option>
+                            </select>
+                            <button id="add-player-btn" class="btn btn-primary">Spieler Hinzufügen</button>
+                        </div>
+                    </div>
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Wollux : " />
+                    <div class="players-list">
+                        <h2>Spieler in der Lobby (<span id="player-count">0</span>)</h2>
+                        <div id="players-container"></div>
+                    </div>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+                    <div class="game-settings">
+                        <h2>Spieleinstellungen</h2>
+                        <div class="setting">
+                            <label for="imposter-count">Anzahl Imposter:</label>
+                            <select id="imposter-count">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+                        <div class="setting">
+                            <label for="tasks-count">Anzahl Aufgaben:</label>
+                            <select id="tasks-count">
+                                <option value="3">3</option>
+                                <option value="5" selected>5</option>
+                                <option value="7">7</option>
+                            </select>
+                        </div>
+                    </div>
 
-    <title>Wollux</title>
-  </head>
+                    <button id="start-game-btn" class="btn btn-success">Spiel Starten</button>
+                </div>
+            </div>
+        </div>
 
-  <body>
+        <!-- Role Reveal Screen -->
+        <div id="role-screen" class="screen">
+            <div class="container">
+                <div class="role-reveal">
+                    <h1 id="role-title"></h1>
+                    <div id="role-icon"></div>
+                    <p id="role-description"></p>
+                    <div id="role-teammates"></div>
+                    <button id="continue-btn" class="btn btn-primary">Weiter</button>
+                </div>
+            </div>
+        </div>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/wollux/wollux">View on GitHub</a>
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-container">
+                <div class="game-header">
+                    <div class="player-info">
+                        <span id="current-player-name"></span>
+                        <span id="current-player-role" class="role-badge"></span>
+                    </div>
+                    <div class="game-stats">
+                        <span id="alive-count">👥 Alive: 0</span>
+                        <span id="task-progress">📋 Tasks: 0/0</span>
+                    </div>
+                    <button id="emergency-meeting-btn" class="btn btn-danger">🚨 Notfall Meeting</button>
+                </div>
 
-          <h1 id="project_title">Wollux</h1>
-          <h2 id="project_tagline"></h2>
+                <div class="game-content">
+                    <div class="map-area">
+                        <div class="room" data-room="cafeteria">
+                            <h3>☕ Cafeteria</h3>
+                            <div class="room-players"></div>
+                            <div class="room-tasks"></div>
+                        </div>
+                        <div class="room" data-room="medbay">
+                            <h3>🏥 Krankenstation</h3>
+                            <div class="room-players"></div>
+                            <div class="room-tasks"></div>
+                        </div>
+                        <div class="room" data-room="electrical">
+                            <h3>⚡ Elektro</h3>
+                            <div class="room-players"></div>
+                            <div class="room-tasks"></div>
+                        </div>
+                        <div class="room" data-room="storage">
+                            <h3>📦 Lager</h3>
+                            <div class="room-players"></div>
+                            <div class="room-tasks"></div>
+                        </div>
+                        <div class="room" data-room="admin">
+                            <h3>💼 Admin</h3>
+                            <div class="room-players"></div>
+                            <div class="room-tasks"></div>
+                        </div>
+                        <div class="room" data-room="weapons">
+                            <h3>🔫 Waffen</h3>
+                            <div class="room-players"></div>
+                            <div class="room-tasks"></div>
+                        </div>
+                    </div>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/wollux/wollux/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/wollux/wollux/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+                    <div class="action-panel">
+                        <h3>Aktionen</h3>
+                        <div id="current-location">Aktueller Raum: <span id="current-room">-</span></div>
+                        <div id="available-actions">
+                            <button class="btn btn-secondary move-btn" data-room="cafeteria">Gehe zur Cafeteria</button>
+                            <button class="btn btn-secondary move-btn" data-room="medbay">Gehe zur Krankenstation</button>
+                            <button class="btn btn-secondary move-btn" data-room="electrical">Gehe zu Elektro</button>
+                            <button class="btn btn-secondary move-btn" data-room="storage">Gehe zum Lager</button>
+                            <button class="btn btn-secondary move-btn" data-room="admin">Gehe zu Admin</button>
+                            <button class="btn btn-secondary move-btn" data-room="weapons">Gehe zu Waffen</button>
+                        </div>
+                        <div id="task-actions"></div>
+                        <div id="imposter-actions"></div>
+                        <button id="next-player-btn" class="btn btn-primary">Nächster Spieler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Discussion/Voting Screen -->
+        <div id="voting-screen" class="screen">
+            <div class="container">
+                <div class="voting-content">
+                    <h1>💬 Diskussion & Abstimmung</h1>
+                    <div id="voting-reason"></div>
+                    <p class="voting-instructions">Diskutiert, wer der Imposter sein könnte, und stimmt ab!</p>
+
+                    <div class="voting-area">
+                        <h2>Wähle einen Spieler:</h2>
+                        <div id="vote-options"></div>
+                        <button id="skip-vote-btn" class="btn btn-secondary">Überspringen</button>
+                    </div>
+
+                    <div class="votes-display">
+                        <h3>Abstimmungen:</h3>
+                        <div id="votes-list"></div>
+                    </div>
+
+                    <button id="end-voting-btn" class="btn btn-primary" style="display:none;">Ergebnis Anzeigen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen">
+            <div class="container">
+                <div class="gameover-content">
+                    <h1 id="winner-title"></h1>
+                    <div id="winner-icon"></div>
+                    <p id="winner-message"></p>
+                    <div id="final-players"></div>
+                    <button id="play-again-btn" class="btn btn-success">Nochmal Spielen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Modal -->
+        <div id="task-modal" class="modal">
+            <div class="modal-content">
+                <h2 id="task-title"></h2>
+                <div id="task-description"></div>
+                <div id="task-interface"></div>
+                <button id="complete-task-btn" class="btn btn-success">Aufgabe Abschließen</button>
+                <button id="cancel-task-btn" class="btn btn-secondary">Abbrechen</button>
+            </div>
+        </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>Welcome to GitHub Pages.</h3>
-
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Wollux maintained by <a href="https://github.com/wollux">wollux</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
-  </body>
+    <script src="javascripts/game.js"></script>
+</body>
 </html>

@@ -1,74 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bundesländer Meister - Das ultimative Lernspiel</title>
+    <link rel="stylesheet" href="stylesheets/game.css">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="startScreen" class="screen active">
+        <div class="container">
+            <h1 class="game-title">🇩🇪 Bundesländer Meister</h1>
+            <p class="subtitle">Lerne die deutschen Bundesländer mit Spaß und AI!</p>
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Wollux : " />
+            <div class="mode-selection">
+                <h2>Wähle deinen Spielmodus:</h2>
+                <div class="mode-cards">
+                    <div class="mode-card" onclick="startGame('quiz')">
+                        <div class="mode-icon">🗺️</div>
+                        <h3>Quiz-Modus</h3>
+                        <p>Finde das richtige Bundesland auf der Karte</p>
+                    </div>
+                    <div class="mode-card" onclick="startGame('capitals')">
+                        <div class="mode-icon">🏛️</div>
+                        <h3>Hauptstädte</h3>
+                        <p>Ordne Hauptstädte den Bundesländern zu</p>
+                    </div>
+                    <div class="mode-card" onclick="startGame('facts')">
+                        <div class="mode-icon">🧠</div>
+                        <h3>Fakten-Challenge</h3>
+                        <p>Teste dein Wissen über die Bundesländer</p>
+                    </div>
+                    <div class="mode-card" onclick="startGame('explorer')">
+                        <div class="mode-icon">🤖</div>
+                        <h3>AI Explorer</h3>
+                        <p>Entdecke Fakten mit AI-Unterstützung</p>
+                    </div>
+                </div>
+            </div>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Wollux</title>
-  </head>
-
-  <body>
-
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/wollux/wollux">View on GitHub</a>
-
-          <h1 id="project_title">Wollux</h1>
-          <h2 id="project_tagline"></h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/wollux/wollux/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/wollux/wollux/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+            <div class="highscores">
+                <h3>🏆 Deine Highscores</h3>
+                <div id="highscoresList"></div>
+            </div>
+        </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>Welcome to GitHub Pages.</h3>
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div class="game-header">
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="label">Modus:</span>
+                    <span id="currentMode" class="value">Quiz</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Punkte:</span>
+                    <span id="score" class="value">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Zeit:</span>
+                    <span id="timer" class="value">0:00</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Runde:</span>
+                    <span id="round" class="value">1/16</span>
+                </div>
+            </div>
+            <button class="btn-exit" onclick="exitGame()">🏠 Zurück</button>
+        </div>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+        <div class="game-content">
+            <div class="question-area">
+                <h2 id="question" class="question"></h2>
+                <div id="questionOptions" class="options-grid"></div>
+                <div id="aiInfo" class="ai-info-box"></div>
+            </div>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+            <div class="map-area">
+                <svg id="germanyMap" viewBox="0 0 1000 1200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Bundesländer werden hier dynamisch eingefügt -->
+                </svg>
+                <div id="mapLegend" class="map-legend"></div>
+            </div>
+        </div>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+        <div class="feedback-area" id="feedbackArea"></div>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Wollux maintained by <a href="https://github.com/wollux">wollux</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+    <!-- Result Screen -->
+    <div id="resultScreen" class="screen">
+        <div class="container">
+            <h1 class="result-title">🎉 Spiel beendet!</h1>
+            <div class="result-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="finalScore">0</div>
+                    <div class="stat-label">Punkte</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="finalTime">0:00</div>
+                    <div class="stat-label">Zeit</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">Genauigkeit</div>
+                </div>
+            </div>
+
+            <div class="result-message" id="resultMessage"></div>
+
+            <div class="result-details">
+                <h3>Deine Antworten:</h3>
+                <div id="answersList"></div>
+            </div>
+
+            <div class="result-actions">
+                <button class="btn-primary" onclick="restartGame()">🔄 Nochmal spielen</button>
+                <button class="btn-secondary" onclick="backToMenu()">🏠 Zum Hauptmenü</button>
+            </div>
+        </div>
     </div>
 
-    
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Lade AI-Informationen...</p>
+    </div>
 
-  </body>
+    <script src="javascripts/bundeslaender-data.js"></script>
+    <script src="javascripts/game-logic.js"></script>
+    <script src="javascripts/ai-integration.js"></script>
+    <script src="javascripts/map-renderer.js"></script>
+    <script src="javascripts/main.js"></script>
+</body>
 </html>

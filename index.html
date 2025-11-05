@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weltkarte - Städteverbindungen</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet.curve für gebogene Linien -->
+    <script src="https://unpkg.com/leaflet-curve@1.0.0/leaflet.curve.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -37,9 +47,10 @@
             margin: 20px 0;
         }
 
-        canvas {
-            display: block;
-            background: #0f3460;
+        #worldMap {
+            width: 1200px;
+            height: 600px;
+            border-radius: 15px;
         }
 
         #controls {
@@ -109,7 +120,7 @@
     <h1>🌍 Interaktive Weltkarte</h1>
 
     <div id="mapContainer">
-        <canvas id="worldMap"></canvas>
+        <div id="worldMap"></div>
     </div>
 
     <div id="controls">

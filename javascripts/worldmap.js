@@ -1,15 +1,6 @@
-// Weltkarte mit Städteverbindungen
+// Weltkarte mit OpenStreetMap und Städteverbindungen
 class WorldMap {
     constructor() {
-        this.canvas = document.getElementById('worldMap');
-        this.ctx = this.canvas.getContext('2d');
-
-        // Canvas Größe
-        this.width = 1200;
-        this.height = 600;
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
-
         // Wichtige Städte mit Koordinaten (Latitude, Longitude)
         this.cities = {
             'Berlin': { lat: 52.520008, lon: 13.404954, name: 'Berlin' },
@@ -44,205 +35,193 @@ class WorldMap {
             'Zürich': { lat: 47.376888, lon: 8.541694, name: 'Zürich' }
         };
 
+        this.map = null;
+        this.markers = {};
         this.activeConnections = [];
+        this.connectionLayer = null;
         this.animationId = null;
 
         this.init();
     }
 
-    // Lat/Lon zu Canvas-Koordinaten konvertieren
-    latLonToXY(lat, lon) {
-        // Equirectangular Projektion
-        const x = (lon + 180) * (this.width / 360);
-        const y = (90 - lat) * (this.height / 180);
-        return { x, y };
+    // Initialisiert die Leaflet-Karte mit OpenStreetMap
+    initMap() {
+        // Leaflet-Karte erstellen
+        this.map = L.map('worldMap', {
+            center: [20, 0],
+            zoom: 2,
+            minZoom: 2,
+            maxZoom: 6,
+            worldCopyJump: true
+        });
+
+        // OpenStreetMap Tile Layer hinzufügen
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(this.map);
+
+        // Layer für Verbindungen
+        this.connectionLayer = L.layerGroup().addTo(this.map);
     }
 
-    // Zeichnet die Weltkarte
-    drawMap() {
-        // Hintergrund
-        this.ctx.fillStyle = '#0f3460';
-        this.ctx.fillRect(0, 0, this.width, this.height);
+    // Städte-Marker hinzufügen
+    addCityMarkers() {
+        // Custom Icon für Städte
+        const cityIcon = L.divIcon({
+            className: 'city-marker',
+            html: '<div style="background: #e74c3c; width: 12px; height: 12px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);"></div>',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+        });
 
-        // Gitternetz
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-        this.ctx.lineWidth = 0.5;
+        Object.entries(this.cities).forEach(([name, city]) => {
+            const marker = L.marker([city.lat, city.lon], {
+                icon: cityIcon,
+                title: city.name
+            }).addTo(this.map);
 
-        // Breitengrade
-        for (let lat = -90; lat <= 90; lat += 15) {
-            this.ctx.beginPath();
-            const y = (90 - lat) * (this.height / 180);
-            this.ctx.moveTo(0, y);
-            this.ctx.lineTo(this.width, y);
-            this.ctx.stroke();
-        }
-
-        // Längengrade
-        for (let lon = -180; lon <= 180; lon += 15) {
-            this.ctx.beginPath();
-            const x = (lon + 180) * (this.width / 360);
-            this.ctx.moveTo(x, 0);
-            this.ctx.lineTo(x, this.height);
-            this.ctx.stroke();
-        }
-
-        // Kontinente (vereinfacht)
-        this.drawContinents();
-    }
-
-    // Vereinfachte Kontinente zeichnen
-    drawContinents() {
-        this.ctx.fillStyle = 'rgba(46, 213, 115, 0.3)';
-        this.ctx.strokeStyle = 'rgba(46, 213, 115, 0.6)';
-        this.ctx.lineWidth = 1;
-
-        // Vereinfachte Kontinentalumrisse (als Beispiel)
-        const continents = [
-            // Europa
-            {points: [[35, 10], [71, 10], [71, 40], [35, 40]]},
-            // Nordamerika
-            {points: [[15, -170], [72, -170], [72, -50], [15, -50]]},
-            // Südamerika
-            {points: [[-55, -80], [12, -80], [12, -35], [-55, -35]]},
-            // Afrika
-            {points: [[-35, -20], [37, -20], [37, 52], [-35, 52]]},
-            // Asien
-            {points: [[10, 40], [75, 40], [75, 150], [10, 150]]},
-            // Australien
-            {points: [[-45, 110], [-10, 110], [-10, 155], [-45, 155]]}
-        ];
-
-        continents.forEach(continent => {
-            this.ctx.beginPath();
-            continent.points.forEach((point, index) => {
-                const coord = this.latLonToXY(point[0], point[1]);
-                if (index === 0) {
-                    this.ctx.moveTo(coord.x, coord.y);
-                } else {
-                    this.ctx.lineTo(coord.x, coord.y);
-                }
+            // Popup mit Stadt-Namen
+            marker.bindPopup(`<b>${city.name}</b>`, {
+                closeButton: false,
+                offset: [0, -5]
             });
-            this.ctx.closePath();
-            this.ctx.fill();
-            this.ctx.stroke();
+
+            // Tooltip immer anzeigen
+            marker.bindTooltip(city.name, {
+                permanent: false,
+                direction: 'top',
+                className: 'city-tooltip'
+            });
+
+            this.markers[name] = marker;
         });
     }
 
-    // Städte zeichnen
-    drawCities() {
-        Object.values(this.cities).forEach(city => {
-            const pos = this.latLonToXY(city.lat, city.lon);
+    // Berechnet Zwischenpunkte für eine gebogene Linie
+    calculateCurvePoints(start, end, numPoints = 100) {
+        const points = [];
 
-            // Stadt-Marker
-            this.ctx.fillStyle = '#f39c12';
-            this.ctx.beginPath();
-            this.ctx.arc(pos.x, pos.y, 4, 0, Math.PI * 2);
-            this.ctx.fill();
+        // Berechne Distanz zwischen Punkten
+        const latDiff = end[0] - start[0];
+        const lonDiff = end[1] - start[1];
+        const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
 
-            // Äußerer Ring
-            this.ctx.strokeStyle = 'rgba(243, 156, 18, 0.5)';
-            this.ctx.lineWidth = 2;
-            this.ctx.beginPath();
-            this.ctx.arc(pos.x, pos.y, 7, 0, Math.PI * 2);
-            this.ctx.stroke();
-
-            // Stadt-Name
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = '10px Arial';
-            this.ctx.fillText(city.name, pos.x + 10, pos.y - 5);
-        });
-    }
-
-    // Berechne Kontrollpunkt für gebogene Linie
-    getControlPoint(start, end) {
-        const midX = (start.x + end.x) / 2;
-        const midY = (start.y + end.y) / 2;
-
-        // Berechne die Distanz
-        const distance = Math.sqrt(
-            Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
-        );
-
-        // Biegung basierend auf Distanz (größere Distanz = stärkere Biegung)
+        // Stärke der Biegung basierend auf Distanz
         const curvature = distance * 0.3;
 
-        // Kontrollpunkt oberhalb der Mittellinie
-        return {
-            x: midX,
-            y: midY - curvature
-        };
-    }
+        // Richtung der Biegung (nach oben)
+        const perpLat = -lonDiff / distance * curvature;
+        const perpLon = latDiff / distance * curvature;
 
-    // Zeichnet eine animierte gebogene Linie zwischen zwei Städten
-    drawAnimatedConnection(city1, city2, progress, color = '#e74c3c') {
-        const pos1 = this.latLonToXY(city1.lat, city1.lon);
-        const pos2 = this.latLonToXY(city2.lat, city2.lon);
-        const control = this.getControlPoint(pos1, pos2);
+        for (let i = 0; i <= numPoints; i++) {
+            const t = i / numPoints;
 
-        // Zeichne die gebogene Linie mit Quadratic Bezier Curve
-        this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = 3;
-        this.ctx.shadowBlur = 15;
-        this.ctx.shadowColor = color;
+            // Quadratic Bezier Curve
+            const midLat = (start[0] + end[0]) / 2 + perpLat;
+            const midLon = (start[1] + end[1]) / 2 + perpLon;
 
-        // Zeichne die Linie bis zum aktuellen Progress
-        this.ctx.beginPath();
+            const lat = (1 - t) * (1 - t) * start[0] +
+                       2 * (1 - t) * t * midLat +
+                       t * t * end[0];
+            const lon = (1 - t) * (1 - t) * start[1] +
+                       2 * (1 - t) * t * midLon +
+                       t * t * end[1];
 
-        for (let t = 0; t <= progress; t += 0.01) {
-            // Quadratic Bezier Curve Formel
-            const x = Math.pow(1 - t, 2) * pos1.x +
-                     2 * (1 - t) * t * control.x +
-                     Math.pow(t, 2) * pos2.x;
-            const y = Math.pow(1 - t, 2) * pos1.y +
-                     2 * (1 - t) * t * control.y +
-                     Math.pow(t, 2) * pos2.y;
-
-            if (t === 0) {
-                this.ctx.moveTo(x, y);
-            } else {
-                this.ctx.lineTo(x, y);
-            }
+            points.push([lat, lon]);
         }
 
-        this.ctx.stroke();
-
-        // Animierter Punkt am Ende der Linie
-        if (progress < 1) {
-            const t = progress;
-            const x = Math.pow(1 - t, 2) * pos1.x +
-                     2 * (1 - t) * t * control.x +
-                     Math.pow(t, 2) * pos2.x;
-            const y = Math.pow(1 - t, 2) * pos1.y +
-                     2 * (1 - t) * t * control.y +
-                     Math.pow(t, 2) * pos2.y;
-
-            this.ctx.fillStyle = color;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, 5, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
-
-        // Reset Shadow
-        this.ctx.shadowBlur = 0;
+        return points;
     }
 
-    // Erstellt eine neue Verbindung
+    // Erstellt eine animierte Verbindung zwischen zwei Städten
     addConnection(city1Name, city2Name) {
         const city1 = this.cities[city1Name];
         const city2 = this.cities[city2Name];
 
         if (!city1 || !city2) return;
 
-        const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+        const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#ff6b6b', '#4ecdc4'];
         const color = colors[Math.floor(Math.random() * colors.length)];
 
-        this.activeConnections.push({
+        // Berechne alle Punkte der gebogenen Linie
+        const start = [city1.lat, city1.lon];
+        const end = [city2.lat, city2.lon];
+        const allPoints = this.calculateCurvePoints(start, end);
+
+        const connection = {
             city1,
             city2,
-            progress: 0,
+            allPoints,
+            currentIndex: 0,
             color,
-            speed: 0.01 + Math.random() * 0.01
+            speed: 2, // Punkte pro Frame
+            polyline: null,
+            marker: null
+        };
+
+        // Erstelle die Polyline (zunächst leer)
+        connection.polyline = L.polyline([], {
+            color: color,
+            weight: 3,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(this.connectionLayer);
+
+        // Animierter Marker am Ende der Linie
+        const movingIcon = L.divIcon({
+            className: 'moving-marker',
+            html: `<div style="background: ${color}; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 15px ${color};"></div>`,
+            iconSize: [10, 10],
+            iconAnchor: [5, 5]
         });
+
+        connection.marker = L.marker([city1.lat, city1.lon], {
+            icon: movingIcon
+        }).addTo(this.connectionLayer);
+
+        this.activeConnections.push(connection);
+    }
+
+    // Animiert alle aktiven Verbindungen
+    animateConnections() {
+        this.activeConnections = this.activeConnections.filter(connection => {
+            // Erhöhe den Index
+            connection.currentIndex += connection.speed;
+            const index = Math.floor(connection.currentIndex);
+
+            if (index < connection.allPoints.length) {
+                // Aktualisiere die Polyline mit den Punkten bis zum aktuellen Index
+                const visiblePoints = connection.allPoints.slice(0, index + 1);
+                connection.polyline.setLatLngs(visiblePoints);
+
+                // Bewege den Marker
+                if (visiblePoints.length > 0) {
+                    connection.marker.setLatLng(visiblePoints[visiblePoints.length - 1]);
+                }
+
+                return true; // Behalte die Verbindung
+            } else {
+                // Animation abgeschlossen, entferne den Marker nach kurzer Zeit
+                setTimeout(() => {
+                    if (connection.marker) {
+                        this.connectionLayer.removeLayer(connection.marker);
+                    }
+                }, 1000);
+
+                // Lasse die Linie noch für 3 Sekunden stehen, dann entfernen
+                setTimeout(() => {
+                    if (connection.polyline) {
+                        this.connectionLayer.removeLayer(connection.polyline);
+                    }
+                }, 3000);
+
+                return false; // Entferne aus aktiven Verbindungen
+            }
+        });
+
+        // Weiter animieren
+        this.animationId = requestAnimationFrame(() => this.animateConnections());
     }
 
     // Zufällige Stadt auswählen (außer der angegebenen)
@@ -266,40 +245,34 @@ class WorldMap {
 
     // Alle Verbindungen löschen
     clearConnections() {
-        this.activeConnections = [];
-    }
-
-    // Animation Loop
-    animate() {
-        // Karte und Städte neu zeichnen
-        this.drawMap();
-        this.drawCities();
-
-        // Alle aktiven Verbindungen zeichnen und animieren
-        this.activeConnections = this.activeConnections.filter(connection => {
-            this.drawAnimatedConnection(
-                connection.city1,
-                connection.city2,
-                connection.progress,
-                connection.color
-            );
-
-            // Progress erhöhen
-            connection.progress += connection.speed;
-
-            // Verbindung behalten bis sie komplett ist (und etwas länger)
-            return connection.progress < 1.2;
+        this.activeConnections.forEach(connection => {
+            if (connection.polyline) {
+                this.connectionLayer.removeLayer(connection.polyline);
+            }
+            if (connection.marker) {
+                this.connectionLayer.removeLayer(connection.marker);
+            }
         });
+        this.activeConnections = [];
+        this.connectionLayer.clearLayers();
 
-        // Nächster Frame
-        this.animationId = requestAnimationFrame(() => this.animate());
+        // Marker wieder hinzufügen
+        Object.values(this.markers).forEach(marker => {
+            marker.addTo(this.map);
+        });
     }
 
     // Initialisierung
     init() {
-        this.drawMap();
-        this.drawCities();
-        this.animate();
+        // Warte bis Leaflet geladen ist
+        if (typeof L === 'undefined') {
+            setTimeout(() => this.init(), 100);
+            return;
+        }
+
+        this.initMap();
+        this.addCityMarkers();
+        this.animateConnections();
 
         // Event Listener für Buttons
         document.getElementById('berlinBtn').addEventListener('click', () => {
@@ -314,12 +287,12 @@ class WorldMap {
             this.clearConnections();
         });
 
-        // Automatische zufällige Verbindungen alle 3 Sekunden
+        // Automatische zufällige Verbindungen alle 4 Sekunden
         setInterval(() => {
-            if (Math.random() > 0.5 && this.activeConnections.length < 5) {
+            if (Math.random() > 0.6 && this.activeConnections.length < 3) {
                 this.connectRandom();
             }
-        }, 3000);
+        }, 4000);
     }
 }
 

@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weltkarte - Städteverbindungen</title>
+    <title>Bestellungs-Visualisierung</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- Leaflet.curve für gebogene Linien -->
-    <script src="https://unpkg.com/leaflet-curve@1.0.0/leaflet.curve.js"></script>
 
     <style>
         * {
@@ -22,8 +19,8 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -32,106 +29,285 @@
             color: white;
         }
 
-        h1 {
-            margin: 20px 0;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* Statistik Panel */
+        #statsPanel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px 40px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-domestic {
+            color: #4ade80;
+        }
+
+        .stat-international {
+            color: #fb923c;
+        }
+
+        /* Tages-Navigation */
+        #dateNavigation {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.5em;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-button:active {
+            transform: scale(0.95);
+        }
+
+        #currentDate {
+            font-size: 1.5em;
+            font-weight: bold;
+            min-width: 250px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Karten Container */
         #mapContainer {
             position: relative;
             background: #1a1a2e;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             overflow: hidden;
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
 
         #worldMap {
-            width: 1200px;
-            height: 600px;
+            width: 1400px;
+            height: 700px;
             border-radius: 15px;
         }
 
+        /* Steuerung */
         #controls {
             display: flex;
             gap: 15px;
-            margin: 20px 0;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             justify-content: center;
         }
 
-        button {
+        .control-button {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
             padding: 15px 30px;
             font-size: 16px;
             font-weight: bold;
-            border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        #berlinBtn {
-            background: linear-gradient(135deg, #e94560, #c41e3a);
-            color: white;
-        }
-
-        #berlinBtn:hover {
+        .control-button:hover {
+            background: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
-        #randomBtn {
-            background: linear-gradient(135deg, #16a085, #0fb896);
-            color: white;
-        }
-
-        #randomBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(22, 160, 133, 0.5);
-        }
-
-        #clearBtn {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
-        }
-
-        #clearBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.5);
-        }
-
-        button:active {
+        .control-button:active {
             transform: translateY(0);
         }
 
-        #info {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            opacity: 0.8;
+        .control-button.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+        }
+
+        /* Legende */
+        #legend {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-line {
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .legend-line.domestic {
+            background: #4ade80;
+        }
+
+        .legend-line.international {
+            background: #fb923c;
+        }
+
+        .legend-line.warehouse {
+            background: #3b82f6;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Warehouse Marker Style */
+        .warehouse-marker {
+            background: #3b82f6;
+            border: 3px solid white;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 1500px) {
+            #worldMap {
+                width: 1200px;
+                height: 600px;
+            }
+        }
+
+        @media (max-width: 1300px) {
+            #worldMap {
+                width: 1000px;
+                height: 500px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>🌍 Interaktive Weltkarte</h1>
+    <div class="header">
+        <h1>📦 Bestellungs-Visualisierung</h1>
+        <div class="subtitle">Tägliche Lieferungen in Echtzeit</div>
+    </div>
 
+    <!-- Statistik Panel -->
+    <div id="statsPanel">
+        <div class="stat-item">
+            <div class="stat-value" id="totalOrders">0</div>
+            <div class="stat-label">Bestellungen</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value stat-domestic" id="domesticOrders">0</div>
+            <div class="stat-label">Inland (DE)</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value stat-international" id="internationalOrders">0</div>
+            <div class="stat-label">International</div>
+        </div>
+    </div>
+
+    <!-- Tages-Navigation -->
+    <div id="dateNavigation">
+        <button class="nav-button" id="prevDayBtn">◀</button>
+        <div id="currentDate">01.01.2024</div>
+        <button class="nav-button" id="nextDayBtn">▶</button>
+    </div>
+
+    <!-- Karte -->
     <div id="mapContainer">
         <div id="worldMap"></div>
     </div>
 
+    <!-- Steuerung -->
     <div id="controls">
-        <button id="berlinBtn">Berlin Verbinden</button>
-        <button id="randomBtn">Zufällige Verbindung</button>
-        <button id="clearBtn">Karte Leeren</button>
+        <button class="control-button primary" id="animateBtn">Bestellungen animieren</button>
+        <button class="control-button" id="showAllBtn">Alle anzeigen</button>
+        <button class="control-button" id="clearBtn">Zurücksetzen</button>
     </div>
 
-    <div id="info">
-        <p>Klicke auf "Berlin Verbinden" um Berlin mit einer zufälligen Stadt zu verbinden</p>
-        <p>Oder nutze "Zufällige Verbindung" für beliebige Städteverbindungen</p>
+    <!-- Legende -->
+    <div id="legend">
+        <div class="legend-item">
+            <div class="legend-dot warehouse-marker"></div>
+            <span>Versandzentrum Frankfurt</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line domestic"></div>
+            <span>Inland (Deutschland)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line international"></div>
+            <span>International</span>
+        </div>
     </div>
 
     <script src="javascripts/worldmap.js"></script>

@@ -1,74 +1,386 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTL: Faster Than Light - Web Edition</title>
+    <link rel="stylesheet" href="stylesheets/game.css">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+        <div class="title-container">
+            <h1 class="game-title">FTL</h1>
+            <h2 class="game-subtitle">FASTER THAN LIGHT</h2>
+            <p class="game-tagline">Web Edition</p>
+        </div>
+        <div class="menu-buttons">
+            <button id="new-game-btn" class="menu-btn">Neues Spiel</button>
+            <button id="continue-btn" class="menu-btn" disabled>Fortsetzen</button>
+            <button id="how-to-play-btn" class="menu-btn">Anleitung</button>
+        </div>
+    </div>
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Wollux : " />
+    <!-- Ship Selection Screen -->
+    <div id="ship-select-screen" class="screen">
+        <h2>Wähle dein Schiff</h2>
+        <div class="ship-selection">
+            <div class="ship-option" data-ship="kestrel">
+                <div class="ship-preview kestrel-preview"></div>
+                <h3>The Kestrel</h3>
+                <p>Ein ausgewogenes Schiff mit guter Bewaffnung und solidem Antrieb.</p>
+                <ul class="ship-stats">
+                    <li>Waffen: Burst Laser II</li>
+                    <li>Schilde: Level 2</li>
+                    <li>Crew: 3 Menschen</li>
+                </ul>
+            </div>
+            <div class="ship-option" data-ship="engi">
+                <div class="ship-preview engi-preview"></div>
+                <h3>The Torus</h3>
+                <p>Ein Engi-Schiff mit starken Drohnen und Reparaturfähigkeiten.</p>
+                <ul class="ship-stats">
+                    <li>Waffen: Ion Blaster</li>
+                    <li>Drohnen: 2 Slots</li>
+                    <li>Crew: 2 Engi</li>
+                </ul>
+            </div>
+            <div class="ship-option" data-ship="stealth">
+                <div class="ship-preview stealth-preview"></div>
+                <h3>The Nesasio</h3>
+                <p>Ein Tarnschiff ohne Schilde, aber mit mächtiger Tarnung.</p>
+                <ul class="ship-stats">
+                    <li>Waffen: Dual Laser</li>
+                    <li>Tarnung: Level 2</li>
+                    <li>Crew: 3 gemischt</li>
+                </ul>
+            </div>
+        </div>
+        <button id="start-game-btn" class="menu-btn">Spiel starten</button>
+        <button id="back-to-menu-btn" class="menu-btn secondary">Zurück</button>
+    </div>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Wollux</title>
-  </head>
-
-  <body>
-
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/wollux/wollux">View on GitHub</a>
-
-          <h1 id="project_title">Wollux</h1>
-          <h2 id="project_tagline"></h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/wollux/wollux/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/wollux/wollux/tarball/master">Download this project as a tar.gz file</a>
+    <!-- How to Play Screen -->
+    <div id="how-to-play-screen" class="screen">
+        <h2>Wie man spielt</h2>
+        <div class="instructions">
+            <section>
+                <h3>Ziel</h3>
+                <p>Fliege durch 8 Sektoren und besiege das Flaggschiff der Rebellen, um die Föderation zu retten!</p>
             </section>
-        </header>
+            <section>
+                <h3>Ressourcen</h3>
+                <ul>
+                    <li><strong>Scrap:</strong> Währung für Upgrades und Reparaturen</li>
+                    <li><strong>Treibstoff:</strong> Benötigt für jeden Sprung</li>
+                    <li><strong>Raketen:</strong> Munition für Raketenwaffen</li>
+                    <li><strong>Drohnenteile:</strong> Für Drohnennutzung</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Kampf</h3>
+                <p>Wähle Waffen und Zielsysteme des Feindes. Zerstöre Schilde, Waffen oder den Antrieb, um zu gewinnen.</p>
+            </section>
+            <section>
+                <h3>Crew</h3>
+                <p>Positioniere deine Crew in verschiedenen Räumen, um Systeme zu bedienen und zu reparieren.</p>
+            </section>
+        </div>
+        <button id="back-from-help-btn" class="menu-btn">Zurück</button>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>Welcome to GitHub Pages.</h3>
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="screen">
+        <!-- Top Bar - Resources -->
+        <div id="top-bar">
+            <div class="resource" id="hull-display">
+                <span class="resource-icon hull-icon"></span>
+                <span class="resource-label">Hülle:</span>
+                <div class="hull-bar">
+                    <div class="hull-fill" id="hull-fill"></div>
+                </div>
+                <span class="resource-value" id="hull-value">30/30</span>
+            </div>
+            <div class="resource" id="scrap-display">
+                <span class="resource-icon scrap-icon"></span>
+                <span class="resource-label">Scrap:</span>
+                <span class="resource-value" id="scrap-value">0</span>
+            </div>
+            <div class="resource" id="fuel-display">
+                <span class="resource-icon fuel-icon"></span>
+                <span class="resource-label">Treibstoff:</span>
+                <span class="resource-value" id="fuel-value">16</span>
+            </div>
+            <div class="resource" id="missiles-display">
+                <span class="resource-icon missiles-icon"></span>
+                <span class="resource-label">Raketen:</span>
+                <span class="resource-value" id="missiles-value">8</span>
+            </div>
+            <div class="resource" id="drones-display">
+                <span class="resource-icon drones-icon"></span>
+                <span class="resource-label">Drohnen:</span>
+                <span class="resource-value" id="drones-value">2</span>
+            </div>
+            <div class="sector-info">
+                <span>Sektor: <span id="sector-value">1</span>/8</span>
+            </div>
+        </div>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+        <!-- Main Game Area -->
+        <div id="game-area">
+            <!-- Player Ship -->
+            <div id="player-ship-container">
+                <h3>Dein Schiff</h3>
+                <div id="player-ship" class="ship">
+                    <div class="ship-room" id="room-shields" data-room="shields">
+                        <div class="room-label">Schilde</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                    <div class="ship-room" id="room-weapons" data-room="weapons">
+                        <div class="room-label">Waffen</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                    <div class="ship-room" id="room-engines" data-room="engines">
+                        <div class="room-label">Antrieb</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                    <div class="ship-room" id="room-medbay" data-room="medbay">
+                        <div class="room-label">Kranken</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                    <div class="ship-room" id="room-oxygen" data-room="oxygen">
+                        <div class="room-label">O2</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                    <div class="ship-room" id="room-pilot" data-room="pilot">
+                        <div class="room-label">Pilot</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                    <div class="ship-room" id="room-sensors" data-room="sensors">
+                        <div class="room-label">Sensor</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                    <div class="ship-room" id="room-doors" data-room="doors">
+                        <div class="room-label">Türen</div>
+                        <div class="room-system-level"></div>
+                        <div class="crew-slots"></div>
+                    </div>
+                </div>
+                <div id="player-shields-display" class="shields-display">
+                    <div class="shield-bubble"></div>
+                    <span id="player-shields-count">2</span> Schilde
+                </div>
+            </div>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+            <!-- Center Area - Combat/Event -->
+            <div id="center-area">
+                <div id="combat-area" class="hidden">
+                    <div id="weapon-charge-bars">
+                        <!-- Weapon bars generated by JS -->
+                    </div>
+                    <div id="combat-log">
+                        <div class="log-entry">Kampf beginnt!</div>
+                    </div>
+                </div>
+                <div id="event-area">
+                    <div id="event-text"></div>
+                    <div id="event-choices"></div>
+                </div>
+            </div>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+            <!-- Enemy Ship -->
+            <div id="enemy-ship-container" class="hidden">
+                <h3 id="enemy-name">Feindliches Schiff</h3>
+                <div id="enemy-ship" class="ship enemy">
+                    <div class="ship-room enemy-room" data-room="shields">
+                        <div class="room-label">Schilde</div>
+                    </div>
+                    <div class="ship-room enemy-room" data-room="weapons">
+                        <div class="room-label">Waffen</div>
+                    </div>
+                    <div class="ship-room enemy-room" data-room="engines">
+                        <div class="room-label">Antrieb</div>
+                    </div>
+                    <div class="ship-room enemy-room" data-room="pilot">
+                        <div class="room-label">Pilot</div>
+                    </div>
+                </div>
+                <div id="enemy-hull-display">
+                    <span>Hülle: </span>
+                    <div class="hull-bar enemy-hull-bar">
+                        <div class="hull-fill" id="enemy-hull-fill"></div>
+                    </div>
+                    <span id="enemy-hull-value">20/20</span>
+                </div>
+                <div id="enemy-shields-display" class="shields-display">
+                    <div class="shield-bubble enemy"></div>
+                    <span id="enemy-shields-count">1</span> Schilde
+                </div>
+            </div>
+        </div>
 
-<h3>Designer Templates</h3>
+        <!-- Bottom Bar - Systems & Crew -->
+        <div id="bottom-bar">
+            <!-- Power Distribution -->
+            <div id="power-section">
+                <h4>Energie: <span id="power-available">8</span>/<span id="power-max">8</span></h4>
+                <div id="power-bars">
+                    <div class="power-system" data-system="shields">
+                        <span class="system-name">Schilde</span>
+                        <div class="power-bar-container">
+                            <div class="power-bar" data-level="0" data-max="4"></div>
+                        </div>
+                        <button class="power-btn minus" data-action="decrease">-</button>
+                        <button class="power-btn plus" data-action="increase">+</button>
+                    </div>
+                    <div class="power-system" data-system="weapons">
+                        <span class="system-name">Waffen</span>
+                        <div class="power-bar-container">
+                            <div class="power-bar" data-level="0" data-max="4"></div>
+                        </div>
+                        <button class="power-btn minus" data-action="decrease">-</button>
+                        <button class="power-btn plus" data-action="increase">+</button>
+                    </div>
+                    <div class="power-system" data-system="engines">
+                        <span class="system-name">Antrieb</span>
+                        <div class="power-bar-container">
+                            <div class="power-bar" data-level="0" data-max="3"></div>
+                        </div>
+                        <button class="power-btn minus" data-action="decrease">-</button>
+                        <button class="power-btn plus" data-action="increase">+</button>
+                    </div>
+                    <div class="power-system" data-system="medbay">
+                        <span class="system-name">Kranken</span>
+                        <div class="power-bar-container">
+                            <div class="power-bar" data-level="0" data-max="3"></div>
+                        </div>
+                        <button class="power-btn minus" data-action="decrease">-</button>
+                        <button class="power-btn plus" data-action="increase">+</button>
+                    </div>
+                    <div class="power-system" data-system="oxygen">
+                        <span class="system-name">O2</span>
+                        <div class="power-bar-container">
+                            <div class="power-bar" data-level="0" data-max="2"></div>
+                        </div>
+                        <button class="power-btn minus" data-action="decrease">-</button>
+                        <button class="power-btn plus" data-action="increase">+</button>
+                    </div>
+                </div>
+            </div>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+            <!-- Weapons -->
+            <div id="weapons-section">
+                <h4>Waffen</h4>
+                <div id="weapons-list">
+                    <!-- Weapons generated by JS -->
+                </div>
+            </div>
 
-<h3>Rather Drive Stick?</h3>
+            <!-- Crew -->
+            <div id="crew-section">
+                <h4>Crew</h4>
+                <div id="crew-list">
+                    <!-- Crew generated by JS -->
+                </div>
+            </div>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+            <!-- Actions -->
+            <div id="actions-section">
+                <button id="jump-btn" class="action-btn">FTL Sprung</button>
+                <button id="pause-btn" class="action-btn">Pause</button>
+                <button id="autofire-btn" class="action-btn">Autofeuer: AUS</button>
+            </div>
+        </div>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Wollux maintained by <a href="https://github.com/wollux">wollux</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+    <!-- Sector Map Screen -->
+    <div id="sector-map-screen" class="screen">
+        <h2>Sektorkarte - Sektor <span id="map-sector-num">1</span></h2>
+        <div id="sector-map">
+            <canvas id="sector-canvas"></canvas>
+            <div id="map-nodes">
+                <!-- Nodes generated by JS -->
+            </div>
+        </div>
+        <div id="map-info">
+            <p>Wähle dein nächstes Ziel. Die Rebellen rücken vor!</p>
+            <div id="rebel-progress">
+                <span>Rebellenflotte:</span>
+                <div class="rebel-bar">
+                    <div class="rebel-fill" id="rebel-fill"></div>
+                </div>
+            </div>
+        </div>
+        <button id="close-map-btn" class="menu-btn">Schließen</button>
     </div>
 
-    
+    <!-- Store Screen -->
+    <div id="store-screen" class="screen">
+        <h2>Raumstation</h2>
+        <div id="store-content">
+            <div id="store-buy">
+                <h3>Kaufen</h3>
+                <div id="store-items">
+                    <!-- Store items generated by JS -->
+                </div>
+            </div>
+            <div id="store-sell">
+                <h3>Reparaturen</h3>
+                <button id="repair-hull-btn" class="store-btn">Hülle reparieren (2 Scrap/HP)</button>
+                <button id="repair-all-btn" class="store-btn">Vollreparatur</button>
+            </div>
+            <div id="store-resources">
+                <h3>Ressourcen</h3>
+                <button class="store-btn" data-buy="fuel">Treibstoff kaufen (3 Scrap)</button>
+                <button class="store-btn" data-buy="missiles">Raketen kaufen (6 Scrap)</button>
+                <button class="store-btn" data-buy="drones">Drohnenteile kaufen (8 Scrap)</button>
+            </div>
+        </div>
+        <p>Dein Scrap: <span id="store-scrap">0</span></p>
+        <button id="leave-store-btn" class="menu-btn">Verlassen</button>
+    </div>
 
-  </body>
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="screen">
+        <h2 id="game-over-title">Spiel Vorbei</h2>
+        <div id="game-over-stats">
+            <p>Erreichte Sektoren: <span id="final-sectors">1</span></p>
+            <p>Besiegte Schiffe: <span id="final-kills">0</span></p>
+            <p>Gesammelter Scrap: <span id="final-scrap">0</span></p>
+        </div>
+        <button id="restart-btn" class="menu-btn">Neues Spiel</button>
+        <button id="main-menu-btn" class="menu-btn secondary">Hauptmenü</button>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victory-screen" class="screen">
+        <h2>SIEG!</h2>
+        <p>Du hast das Flaggschiff der Rebellen besiegt und die Föderation gerettet!</p>
+        <div id="victory-stats">
+            <p>Crew überlebt: <span id="victory-crew">3</span></p>
+            <p>Besiegte Schiffe: <span id="victory-kills">0</span></p>
+            <p>Übrig gebliebener Scrap: <span id="victory-scrap">0</span></p>
+        </div>
+        <button id="victory-restart-btn" class="menu-btn">Nochmal spielen</button>
+        <button id="victory-menu-btn" class="menu-btn secondary">Hauptmenü</button>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" class="hidden">
+        <div class="pause-content">
+            <h2>PAUSE</h2>
+            <button id="resume-btn" class="menu-btn">Fortsetzen</button>
+            <button id="save-quit-btn" class="menu-btn secondary">Speichern & Beenden</button>
+        </div>
+    </div>
+
+    <script src="javascripts/game.js"></script>
+</body>
 </html>
